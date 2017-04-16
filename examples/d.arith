@@ -1,0 +1,1 @@
+if isZero S S Z then Z else S Z

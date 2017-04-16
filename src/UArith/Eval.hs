@@ -25,11 +25,14 @@ evalStep (ESucc t) = do
   t' <- evalStep t
   pure $ ESucc t'
 evalStep (EPred CZero) = pure CZero
-evalStep (EPred (ESucc t)) = pure t
+
+evalStep (EPred (ESucc t)) | isNumericVal t = pure t
 evalStep (EPred t) = do
   t' <- evalStep t
   pure $ EPred t'
-evalStep t = Left "No rule applies"
+evalStep (EIsZero CZero) = pure CTrue
+evalStep (EIsZero (ESucc t)) | isNumericVal t = pure CFalse
+evalStep _ = Left "No rule applies"
 
 eval :: Term -> Term
 eval t = either (const t) eval $ evalStep t

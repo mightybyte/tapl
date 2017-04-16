@@ -20,8 +20,8 @@ parseTerm =
     <|> parseFalse
     <|> parseSucc
     <|> parsePred
-    <|> parseCond
-    <|> parseIsZero
+    <|> try parseCond
+    <|> try parseIsZero
 
 ws = space >> spaces >> return ()
 
