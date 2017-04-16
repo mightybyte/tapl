@@ -32,8 +32,34 @@ evalStep (EPred t) = do
   pure $ EPred t'
 evalStep (EIsZero CZero) = pure CTrue
 evalStep (EIsZero (ESucc t)) | isNumericVal t = pure CFalse
-evalStep _ = Left "No rule applies"
+evalStep _ = err
 
 eval :: Term -> Term
 eval t = either (const t) eval $ evalStep t
 
+evalBigStep :: Term -> Either String Term
+evalBigStep CTrue = pure CTrue
+evalBigStep CFalse = pure CFalse
+evalBigStep CZero = pure CZero
+evalBigStep (ECond c t1 t2) = do
+  c' <- evalBigStep c
+  case c' of
+    CTrue -> evalBigStep t1
+    CFalse -> evalBigStep t2
+    _ -> err
+evalBigStep (ESucc t) = ESucc <$> evalBigStep t
+evalBigStep (EPred t) = do
+  t' <- evalBigStep t
+  case t' of
+    CZero -> pure CZero
+    ESucc v -> pure v
+    _ -> err
+evalBigStep (EIsZero t) = do
+  t' <- evalBigStep t
+  case t' of
+    CZero -> pure CTrue
+    ESucc _ -> pure CFalse
+    _ -> err
+
+err :: Either String Term
+err = Left "No rule applies"
